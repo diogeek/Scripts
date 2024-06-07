@@ -1,9 +1,9 @@
-#! /usr/bin/env sh
+#!/usr/bin/env sh
 
-usage() { echo "Usage: $0 [-d] [-s] [-p password]" >&2; exit 1;}
+usage() { echo "Usage: $0 [-ds] [-p password]" >&2; exit 1;}
 
 while getopts "dsp:" opt; do
-    case $opt in
+    case "${opt}" in
         d)
             set -x
             ;;
@@ -21,7 +21,7 @@ while getopts "dsp:" opt; do
 done
 shift $((OPTIND-1))
 
-password=$1
+password="${1}"
 
 if [ -z "${password}" ]; then
     printf "Password:"
