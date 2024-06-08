@@ -99,11 +99,11 @@ while getopts "lse:Edgv" opt; do
             ;;
         e)
             # Only usable if globbing mode is active. Looks for files with this exact extension, which is not the default behavior of globbing mode.
-            [ "${_G}" = "1" ] && extension="${OPTARG}" >&2 || ( printf " [-e] : Exact extension mode is on by default when not in globbing mode (-g). Enabling it without globbing mode being active has no effect.\n" >%2 && exit 1 )
+            [ "${_G}" = "1" ] && extension="${OPTARG}" >&2 || ( printf " [-e] : Exact extension mode is on by default when not in globbing mode (-g). Enabling it without globbing mode being active has no effect.\n" >&2 && exit 1 )
             ;;
         E)
             # Looks for files regardless of their extension, which is not the default behavior with globbing mode disabled. On by default if globbing mode is active.
-            [ "${_G}" = "1" ] && printf " [-f] : Any extension mode is on by default in globbing mode (-g). Enabling it has no effect.\n" >%2 || _E=1
+            [ "${_G}" = "1" ] && printf " [-f] : Any extension mode is on by default in globbing mode (-g). Enabling it has no effect.\n" >&2 || _E=1
             ;;
         d)
             ;;
@@ -154,7 +154,7 @@ else
             start="${2}"
         fi
     else 
-        printf " Error : %s is not a directory\n" "${2}" >%2 && exit 1 
+        printf " Error : %s is not a directory\n" "${2}" >&2 && exit 1 
     fi
 fi
 
