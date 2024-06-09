@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
 
-printf "\n"
 
 # echoes and crashes on error
 set -e
@@ -128,7 +127,6 @@ shift $((OPTIND-1))
 # check if we're using a posix-compliant shell (only useful if currently in verbose and step mode)
 [ "${_S}" = "1" ] && vprint "$(set -o | grep posix)" && read -r
 
-
 # arguments > variables
 # filename  |  target
 # directory |  start
@@ -163,10 +161,16 @@ ransack() {(
     # set our local variable preventing overwriting due to recursivity
     filelist="$(echo "${1}"*)"
     recurlevel="${2}"
-    
-    vprint '\033[H\033[JRecursivity Depth : %s\033[0K\nCurrent Working Directory : %s\033[0K' "${recurlevel}" "${1}"
-    [ "${_L}" = "1" ] && vprint '\nFile list : %s\033[0K' "${filelist}"
-    [ "${_S}" = "1" ] && read -r
+
+    # verbose part
+    [ "${_V}" = "1" ] && {
+        printf "\033[H"
+        j=0
+        while [ $j -lt $matchcounter ]; do
+            printf "\n"
+            j=$(( j + 1 ))
+        done
+    }
 
     # quickly check for our target in the current working directory
     # instead of iterating through its directories right away
@@ -175,6 +179,7 @@ ransack() {(
         for file in $(echo "${filelist}"); do
             if [ "${file%/"${target}"}" != "${file}" ]; then
                 printf "%s\n" "${file}"
+                matchcounter=$(( matchcounter+1 ))
             fi
         done
     } || {
@@ -182,8 +187,15 @@ ransack() {(
         for file in $(echo "${filelist}"); do
             if [ "${file#*/"${target}"}" != "${file}" ]; then
                 printf "%s\n" "${file}"
+                matchcounter=$(( matchcounter+1 ))
             fi
         done
+    }
+
+    [ "${_V}" = "1" ] && {
+        printf "\033[JRecursivity Depth : %s\033[0K\nCurrent Working Directory : %s\033[0K" "${recurlevel}" "${1}"
+        [ "${_L}" = "1" ] && printf "\nFile list : %s\033[0K" "${filelist}\n"
+        [ "${_S}" = "1" ] && read -r
     }
 
     # if target not found, start iterating through directories and repeating the loop
@@ -194,7 +206,10 @@ ransack() {(
     done
 )}
 
+matchcounter=0
 ransack "${start}" 0
 
 # coder -e et -E
 # trouver un moyen de faire en sorte que le print que j'utilise pour output les matchs ne soit pas écrasé par les caractères d'échappement du mode verbose : eh oui actuellemnt quand on trouve un résultat qui match on l'output sur le coup, ce qui fait qu'il finit par être supprimé lors du clear que j'effectue au début de chaque itération du printf verbeux
+# j'ai réussi mais c'est un peu moche, faudrait éviter d'incrémenter le matchcounter si jsuis pas en verbose, mais ça serait tout aussi bête de check _V à chaque itération donc je pense qu'il faut encore que je copie colle les deux boucles _G et non-_G dans un if _V et non-_V
+# idéalement en faire une fonction avec les paramètres _V et _G pour éviter 8 boucles différentes dans un code illisible c'est pas mal comme idée
